@@ -15,7 +15,7 @@ def getDatalist(city, today):
     if today:
         datalist = data["list"][:8]
     else:
-        datalist = data["list"][8:16]
+        datalist = data["list"][4:12]
     return datalist
 
 
@@ -48,5 +48,5 @@ def debugPrint(datalist):
 
 
 api = setting()
-datalist = getDatalist("Tokyo", True)
+datalist = getDatalist("Tokyo", False)
 debugPrint(datalist)
