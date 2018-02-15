@@ -19,13 +19,17 @@ def getDatalist(city, today):
     return datalist
 
 
-def getTempMaxAndMin(datalist):  # 単位は摂氏温度
+def getProperties(datalist):  # 単位は摂氏温度
     temp_max = []
     temp_min = []
+    pressures = []
+    speeds = []
     for data in datalist:
         temp_max.append(float(data["main"]["temp_max"]))
         temp_min.append(float(data["main"]["temp_min"]))
-    return max(temp_max), min(temp_min)
+        pressures.append(float(data["main"]["pressure"]))
+        speeds.append(float(data["wind"]["speed"]))
+    return max(temp_max), min(temp_min), max(speeds), min(pressures)
 
 
 def getWeather(datalist):
@@ -35,13 +39,6 @@ def getWeather(datalist):
     return morning, evening, night
 
 
-def getMinPressure(datalist):  # 単位はhPa
-    pressures = []
-    for data in datalist:
-        pressures.append(float(data["main"]["pressure"]))
-    return min(pressures)
-
-
 def debugPrint(datalist):
     for data in datalist:
         print(data["dt_txt"])
@@ -49,4 +46,5 @@ def debugPrint(datalist):
 
 api = setting()
 datalist = getDatalist("Tokyo", False)
+print(getProperties(datalist))
 debugPrint(datalist)
