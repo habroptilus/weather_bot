@@ -72,12 +72,16 @@ def generateTweet(city, today):
         pressure = "気圧が大きく下がるから、頭痛持ちの人は気をつけてね。"
     else:
         pressure = ""
+    if wind_max > 10:
+        wind = "風が強くなりそうだから気をつけてね。"
+    else:
+        wind = ""
 
     tenki = getTenki(weather)
     tweet = "[{city}のお天気]\n{greet}\n{day}の{city}は{weather}"
-    tweet += "気温は最高で{temp_max}°Cまで上がって、最低気温は{temp_min}°Cだって。{pressure}\n{closing}"
+    tweet += "気温は最高で{temp_max}°Cまで上がって、最低気温は{temp_min}°Cだって。{wind}{pressure}\n{closing}"
     print(pressure_diff)
-    return tweet.format(greet=greet, day=day, city=tosimei, weather=tenki, pressure=pressure, temp_max=temp_max, temp_min=temp_min, closing=closing)
+    return tweet.format(greet=greet, day=day, city=tosimei, wind=wind, weather=tenki, pressure=pressure, temp_max=temp_max, temp_min=temp_min, closing=closing)
 
 
 def getElement(today):
