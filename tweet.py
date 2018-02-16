@@ -14,4 +14,4 @@ req = twitter.post(
 if req.status_code == 200:
     print("Success!")
 else:
-    print("Error!")
+    print("Error:{}".format(req.status_code))
