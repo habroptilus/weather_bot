@@ -1,6 +1,9 @@
 import requests
 import json
 
+weather_ja = {"Clear": "晴れ", "Clouds": "くもり", "Rain": "雨", "Snow": "雪"}
+city_ja = {"Tokyo": "東京"}
+
 
 def setting():
     with open('api_key.txt', 'r') as f:
@@ -8,7 +11,7 @@ def setting():
     return 'http://api.openweathermap.org/data/2.5/forecast?q={city},jp&units=metric&APPID=' + apikey
 
 
-def getDatalist(city, today):
+def getDatalist(api, city, today):
     url = api.format(city=city)
     r = requests.get(url)
     data = json.loads(r.text)
@@ -29,7 +32,7 @@ def getProperties(datalist):  # 単位は摂氏温度
         temp_min.append(float(data["main"]["temp_min"]))
         pressures.append(float(data["main"]["pressure"]))
         speeds.append(float(data["wind"]["speed"]))
-    return max(temp_max), min(temp_min), max(speeds), min(pressures)
+    return round(max(temp_max), 1), round(min(temp_min), 1), max(speeds), min(pressures)
 
 
 def getWeather(datalist):
@@ -44,7 +47,51 @@ def debugPrint(datalist):
         print(data["dt_txt"])
 
 
-api = setting()
-datalist = getDatalist("Tokyo", False)
-print(getProperties(datalist))
-debugPrint(datalist)
+def generateTweet(city, today):
+    api = setting()
+    datalist = getDatalist(api, city, today)
+    weather = getWeather(datalist)
+    temp_max, temp_min, wind_max, pressure_min = getProperties(datalist)
+    greet, closing, day = getElement(today)
+    if city in city_ja:
+        tosimei = city_ja[city]
+    else:
+        tosimei = city
+    tenki = getTenki(weather)
+    tweet = "[{city}のお天気]\n{greet}\n{day}の{city}は{weather}"
+    tweet += "気温は最高で{temp_max}°Cまで上がって、最低気温は{temp_min}°Cだって。\n{closing}"
+
+    return tweet.format(greet=greet, day=day, city=tosimei, weather=tenki, temp_max=temp_max, temp_min=temp_min, closing=closing)
+
+
+def getElement(today):
+    if today:
+        return "おはよー！", "今日もがんばってね。", "今日"
+    else:
+        return "今日もおつかれさま！", "ゆっくり休んでね。", "明日"
+
+
+def getTenki(weather):
+    if "Rain" in weather:
+        if weather == ("Rain", "Rain", "Rain"):
+            return "一日中ずっと雨みたい。やだね。"
+        elif weather[0] == "Rain"and weather[1] == "Rain":
+            return "夕方ぐらいまで雨だけど、夜にはやみそう。"
+        elif weather[1] == "Rain" and weather[2] == "Rain":
+            return "午後から雨が降りそう。昼からかも？"
+        elif wether[0] == "Rain":
+            return "朝は雨だけど、午後は雨が上がりそう。わーい。"
+        elif weather[2] == "Rain":
+            return "夜に雨が降り出しそう。傘持ってくといいかもね。"
+        else:
+            return "雨降るよ。あーめあがーりさしたまんまー傘がひとーつ。"
+    elif "Snow" in weather:
+        return "雪が降るよ！スノースマイル！"
+    elif "Clear" not in weather and "Clouds" not in weather:
+        return "よくわかんない！ごめんね。"
+    elif weather == ("Clear", "Clear", "Clear"):
+        return "とってもいい天気！"
+    elif weather == ("Clouds", "Clouds", "Clouds"):
+        return "一日中ずっとくもり。"
+    else:
+        return "晴れたり曇ったりするよ。ふつうが一番だね。"

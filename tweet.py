@@ -2,18 +2,14 @@ from requests_oauthlib import OAuth1Session
 import json
 import settings
 import random
-import datetime
+import forecast
 
 twitter = OAuth1Session(settings.CONSUMER_KEY,  settings.CONSUMER_SECRET,
                         settings.ACCESS_TOKEN, settings.ACCESS_TOKEN_SECRET)
+tweet = forecast.generateTweet("Tokyo", today=True)
+params = {"status": tweet}
 
-tweets = ["にゃーん", "わおーん"]
-
-randomtweet = tweets[random.randrange(len(tweets))]
-timestamp = datetime.datetime.today()
-timestamp = str(timestamp.strftime("%Y/%m/%d %H:%M"))  # タイムスタンプを用意
-
-params = {"status": randomtweet + " " + timestamp}
 req = twitter.post(
     "https://api.twitter.com/1.1/statuses/update.json", params=params)
-print(req)
+if req.status_code:
+    print("Success!")
