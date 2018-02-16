@@ -6,7 +6,7 @@ import forecast
 
 twitter = OAuth1Session(settings.CONSUMER_KEY,  settings.CONSUMER_SECRET,
                         settings.ACCESS_TOKEN, settings.ACCESS_TOKEN_SECRET)
-tweet = forecast.generateTweet("Tokyo", today=True)
+tweet = forecast.generateTweet("Tokyo", today=False)
 params = {"status": tweet}
 
 req = twitter.post(
