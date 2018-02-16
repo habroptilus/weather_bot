@@ -1,7 +1,6 @@
 import requests
 import json
-
-weather_ja = {"Clear": "晴れ", "Clouds": "くもり", "Rain": "雨", "Snow": "雪"}
+import math
 city_ja = {"Tokyo": "東京"}
 
 
@@ -32,7 +31,19 @@ def getProperties(datalist):  # 単位は摂氏温度
         temp_min.append(float(data["main"]["temp_min"]))
         pressures.append(float(data["main"]["pressure"]))
         speeds.append(float(data["wind"]["speed"]))
-    return round(max(temp_max), 1), round(min(temp_min), 1), max(speeds), min(pressures)
+    p_max = max(pressures)
+    p_min = min(pressures)
+    pressure_diff = getMaxDiff(pressures)
+    return round(max(temp_max), 1), round(min(temp_min), 1), max(speeds), pressure_diff
+
+
+def getMaxDiff(pressures):  # 一番大きい気圧減少量を返す。単調増加してたら0を返す
+    e_max = 0
+    diff = 0
+    for pressure in pressures:
+        e_max = max(e_max, pressure)
+        diff = max(e_max - pressure, diff)
+    return diff
 
 
 def getWeather(datalist):
@@ -51,17 +62,22 @@ def generateTweet(city, today):
     api = setting()
     datalist = getDatalist(api, city, today)
     weather = getWeather(datalist)
-    temp_max, temp_min, wind_max, pressure_min = getProperties(datalist)
+    temp_max, temp_min, wind_max, pressure_diff = getProperties(datalist)
     greet, closing, day = getElement(today)
     if city in city_ja:
         tosimei = city_ja[city]
     else:
         tosimei = city
+    if pressure_diff > 10:
+        pressure = "気圧が大きく下がるから、頭痛持ちの人は気をつけてね。"
+    else:
+        pressure = ""
+
     tenki = getTenki(weather)
     tweet = "[{city}のお天気]\n{greet}\n{day}の{city}は{weather}"
-    tweet += "気温は最高で{temp_max}°Cまで上がって、最低気温は{temp_min}°Cだって。\n{closing}"
-
-    return tweet.format(greet=greet, day=day, city=tosimei, weather=tenki, temp_max=temp_max, temp_min=temp_min, closing=closing)
+    tweet += "気温は最高で{temp_max}°Cまで上がって、最低気温は{temp_min}°Cだって。{pressure}\n{closing}"
+    print(pressure_diff)
+    return tweet.format(greet=greet, day=day, city=tosimei, weather=tenki, pressure=pressure, temp_max=temp_max, temp_min=temp_min, closing=closing)
 
 
 def getElement(today):
